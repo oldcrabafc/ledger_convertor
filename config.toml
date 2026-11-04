@@ -1,0 +1,70 @@
+title = "序时账清洗配置表"
+client = "供应链集团"
+
+[required_columns]
+
+[required_columns.posting_date]
+source = "过帐日期"
+dtype = "Date"
+
+[required_columns.voucher_id]
+source = "凭证编号"
+dtype = "Utf8"
+prefix = "v_"
+
+[required_columns.vocher_header]
+source = "凭证抬头文本"
+dtype = "Utf8"
+
+[required_columns.ac_code]
+source = "总帐帐目"
+dtype = "Utf8"
+prefix = "ac_"
+
+[required_columns.ac_caption]
+source = "总账科目长文本"
+dtype = "Utf8"
+
+[required_columns.drcr]
+source = "借/贷标识"
+dtype = "Utf8"
+
+[required_columns.rc_amount]
+source = "本位币金额"
+dtype = "Float64"
+
+[required_columns.vendor_id]
+source = "供应商"
+dtype = "Utf8"
+prefix = "s_"
+
+[required_columns.vendor_name]
+source = "供应商"
+dtype = "Utf8"
+kind = "right_neighbor"
+
+[required_columns.customer_id]
+source = "客户"
+dtype = "Utf8"
+prefix = "c_"
+
+[required_columns.customer_name]
+source = "客户"
+dtype = "Utf8"
+kind = "right_neighbor"
+
+[required_columns.lc_amount]
+source = "总帐金额"
+dtype = "Float64"
+
+[required_columns.description]
+source = "文本"
+dtype = "Utf8"
+
+[drcr]
+# 设置single的目的是以后如有借贷双列的，方便拓展
+[drcr.single]
+column = "drcr"
+debit = "S"
+credit = "H"
+amount_columns = ["rc_amount", "lc_amount"]
