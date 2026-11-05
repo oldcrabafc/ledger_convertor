@@ -1,0 +1,59 @@
+[group]
+name = "集团A"
+version = "v1"
+
+[input]
+sheet_name = "序时账"
+header_row = 0
+
+[fields]
+
+[fields.voucher_id]
+source = "凭证编号"
+dtype = "string"
+required = true
+
+[fields.posting_date]
+source = "过账日期"
+dtype = "datetime"
+required = true
+
+[fields.account_code]
+source = "总账科目"
+dtype = "string"
+
+[fields.description]
+source = "摘要"
+dtype = "string"
+
+[fields.drcr]
+source = "借贷标识"
+dtype = "string"
+
+[fields.voucher_status]
+source = "凭证状态"
+dtype = "string"
+
+[fields.amount]
+source = "本币金额"
+dtype = "decimal"
+required = true
+
+[processing]
+remove_voided = true
+voided_column = "voucher_status"
+voided_values = ["已作废"]
+remove_closing = true
+closing_column = "摘要"
+closing_prefixes = ["结转"]
+drop_zero_amount_rows = true
+
+[drcr]
+column = "drcr"
+debit_values = ["借", "S"]
+credit_values = ["贷", "H"]
+amount_columns = ["amount"]
+
+[validation]
+required_columns = ["voucher_id", "posting_date", "amount"]
+allow_unknown_drcr = false
