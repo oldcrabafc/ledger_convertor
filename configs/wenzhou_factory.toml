@@ -1,0 +1,57 @@
+[group]
+name = "温州工厂"
+version = "v1"
+
+[input]
+sheet_name = "Sheet1"
+header_row = 0
+
+[fields]
+company_code = { source = "公司代码", dtype = "string", required = true }
+fiscal_year = { source = "财年", dtype = "int", required = true }
+posting_period = { source = "过账期间", dtype = "int", required = true }
+voucher_id = { source = "凭证编号", dtype = "string", required = true }
+line_item = { source = "行项目", dtype = "int", required = true }
+posting_date = { source = "过账日期", dtype = "datetime", required = true }
+document_type = { source = "凭证类型", dtype = "string" }
+header_text = { source = "凭证抬头文本", dtype = "string" }
+posting_code = { source = "过账代码", dtype = "string" }
+special_gl_indicator = { source = "特别总账标识", dtype = "string" }
+account_code = { source = "总帐帐目", dtype = "string", required = true }
+account_name = { source = "总账科目长文本", dtype = "string" }
+drcr = { source = "借/贷标识", dtype = "string", required = true }
+amount_local = { source = "本位币金额", dtype = "decimal", required = true }
+cost_center = { source = "成本中心", dtype = "string" }
+supplier_code = { source = "供应商", dtype = "string" }
+supplier_name = { source = "供应商", dtype = "string", kind = "right_neighbor" }
+customer_code = { source = "客户", dtype = "string" }
+customer_name = { source = "客户", dtype = "string", kind = "right_neighbor" }
+description = { source = "文本", dtype = "string" }
+assignment = { source = "分配", dtype = "string" }
+tax_code = { source = "税码", dtype = "string" }
+business_description = { source = "描述", dtype = "string" }
+input_date = { source = "输入日期", dtype = "datetime" }
+currency = { source = "货币", dtype = "string" }
+exchange_rate = { source = "汇率", dtype = "decimal" }
+username = { source = "用户名", dtype = "string" }
+voucher_status = { source = "凭证状态", dtype = "string" }
+amount_ledger = { source = "总帐金额", dtype = "decimal" }
+profit_center = { source = "利润中心", dtype = "string" }
+
+[processing]
+fill_forward = ["voucher_id", "posting_date", "header_text", "description"]
+remove_voided = true
+voided_column = "voucher_status"
+voided_values = ["已作废", "作废", "已冲销"]
+remove_closing = false
+drop_empty_columns = ["account_code", "account_name"]
+
+[drcr]
+column = "drcr"
+debit_values = ["S", "借"]
+credit_values = ["H", "贷"]
+amount_columns = ["amount_local", "amount_ledger"]
+
+[validation]
+required_columns = ["voucher_id", "posting_date", "account_code", "amount_local"]
+allow_unknown_drcr = false

@@ -9,6 +9,28 @@ import pandas as pd
 from .config import GroupConfig
 
 
+def cache_directory_to_pickle(
+    input_dir: str | Path,
+    *,
+    config: GroupConfig | None = None,
+    pattern: str = "*.xlsx",
+    refresh: bool = False,
+) -> list[Path]:
+    """Cache every Excel ledger in a directory and return created cache paths."""
+    directory = Path(input_dir).expanduser()
+    if not directory.is_dir():
+        raise NotADirectoryError(f"Input directory not found: {directory}")
+    paths: list[Path] = []
+    candidates = sorted({*directory.glob(pattern), *directory.glob(pattern.upper())})
+    for source in candidates:
+        target = source.with_suffix(".pkl")
+        if refresh or not target.exists() or source.stat().st_mtime > target.stat().st_mtime:
+            paths.append(cache_excel_to_pickle(source, target, config))
+        else:
+            paths.append(target)
+    return paths
+
+
 def cache_excel_to_pickle(
     excel_path: str | Path,
     pickle_path: str | Path | None = None,

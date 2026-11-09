@@ -36,7 +36,6 @@ def _cast_series(series: pd.Series, dtype: str) -> pd.Series:
 
 def resolve_source_columns(df: pd.DataFrame, config: GroupConfig) -> dict[str, str]:
     positions = {name: index for index, name in enumerate(df.columns)}
-    non_null = df.notna().sum()
     resolved: dict[str, str] = {}
     for target, rule in config.fields.items():
         if rule.source not in positions:
@@ -47,8 +46,6 @@ def resolve_source_columns(df: pd.DataFrame, config: GroupConfig) -> dict[str, s
             if index + 1 >= len(df.columns):
                 raise ValueError(f"No right-neighbor column after '{source}'")
             candidate = str(df.columns[index + 1])
-            if int(non_null[source]) != int(non_null[candidate]):
-                raise ValueError(f"Right-neighbor column does not match '{source}': {candidate}")
             source = candidate
         resolved[target] = source
     return resolved
@@ -87,6 +84,20 @@ def apply_processing_rules(df: pd.DataFrame, config: GroupConfig) -> pd.DataFram
         pattern = "|".join(pd.Series(processing.closing_prefixes).map(lambda value: f"^{value}").tolist())
         if pattern:
             result = result.loc[~result[processing.closing_column].astype("string").str.contains(pattern, na=False, regex=True)].copy()
+
+    if processing.drop_empty_columns:
+        columns = [column for column in processing.drop_empty_columns if column in result.columns]
+        if columns:
+            empty = pd.DataFrame(
+                {
+                    column: result[column].isna()
+                    | result[column].astype("string").str.strip().eq("")
+                    for column in columns
+                },
+                index=result.index,
+            ).all(axis=1)
+            result = result.loc[~empty].copy()
+
     if processing.drop_zero_amount_rows and config.drcr:
         amounts = [column for column in config.drcr.amount_columns if column in result.columns]
         if amounts:
@@ -115,6 +126,7 @@ def add_source_metadata(df: pd.DataFrame, source_file: str, config: GroupConfig)
     result = df.copy()
     result.insert(0, "_source_row", result.index + 1)
     result.insert(0, "_source_file", source_file)
+    result["_source_sheet"] = config.sheet_name
     result["_group"] = config.name
     result["_config_version"] = config.version
     result["_conversion_time"] = pd.Timestamp.now(tz="UTC")

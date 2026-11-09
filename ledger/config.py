@@ -39,6 +39,7 @@ class ProcessingRule:
     closing_column: str | None = None
     closing_prefixes: tuple[str, ...] = ()
     drop_zero_amount_rows: bool = False
+    drop_empty_columns: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -113,6 +114,7 @@ def load_config(path: str | Path) -> GroupConfig:
         closing_column=raw_processing.get("closing_column"),
         closing_prefixes=tuple(str(value) for value in _as_tuple(raw_processing.get("closing_prefixes"))),
         drop_zero_amount_rows=bool(raw_processing.get("drop_zero_amount_rows", False)),
+        drop_empty_columns=tuple(str(value) for value in _as_tuple(raw_processing.get("drop_empty_columns"))),
     )
 
     raw_drcr = _mapping(raw.get("drcr"), "drcr") if raw.get("drcr") is not None else None
